@@ -94,6 +94,7 @@ app.get('/data',(req, res) => {
 // User routes
 app.post('/users/signup', (req, res) => {
   // logic to sign up
+//   const user={...req.body,purchasedCourses:[]}
   const user = {
     username: req.body.username,
     password: req.body.password,
@@ -141,20 +142,23 @@ app.get('/users/courses', userAuth, (req, res) => {
     }
   });
   
-//   app.get('/users/purchasedCourses', userAuth, (req, res) => {
-//     // const purchasedCourses = COURSES.filter(c => req.user.purchasedCourses.includes(c.id));
-//     // We need to extract the complete course object from COURSES
-//     // which have ids which are present in req.user.purchasedCourses
-//     var purchasedCourseIds = req.user.purchasedCourses; [1, 4];
-//     var purchasedCourses = [];
-//     for (let i = 0; i<COURSES.length; i++) {
-//       if (purchasedCourseIds.indexOf(COURSES[i].id) !== -1) {
-//         purchasedCourses.push(COURSES[i]);
-//       }
-//     }
+  app.get('/users/purchasedCourses', userAuth, (req, res) => {
+    // const purchasedCourses = COURSES.filter(c => user.purchasedCourses.includes(c.id));
+    // We need to extract the complete course object from COURSES
+    // which have ids which are present in user.purchasedCourses
+    const username=req.headers.username ;
+    const user=USERS.find(a => a.username === username);
+      
+    var purchasedCourseIds = user.purchasedCourses;
+    var purchasedCourses = [];
+    for (let i = 0; i<COURSES.length; i++) {
+      if (purchasedCourseIds.indexOf(COURSES[i].id) !== -1) {
+        purchasedCourses.push(COURSES[i]);
+      }
+    }
   
-//     res.json({ purchasedCourses });
-//   });
+    res.json({ purchasedCourses });
+  });
 
 app.listen(3000, () => {
   console.log('Server is listening on port 3000');
