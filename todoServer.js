@@ -52,7 +52,7 @@ app.post('/todos',(req,res)=>{
     }
     console.log("new ",newTodo)
     todo.push(newTodo);
-res.status(201).json({message:"data added"});
+res.status(201).json({id:id});
 })
 
 app.put('/todos/:id',(req,res)=>{
@@ -61,10 +61,10 @@ app.put('/todos/:id',(req,res)=>{
     if(resp!=-1){
         todo[resp]["title"]=req.body.title;
         todo[resp]["description"]=req.body.description;
-        res.status(200).json("updated")
+        res.status(200).json()
     }
     else{
-        res.status(403).json("invalid id")
+        res.status(404).json()
     }
 })
 
@@ -77,10 +77,10 @@ app.delete('/delete/:id',(req,res)=>{
     if(resp!=-1){
      
     todo.splice(resp,1);
-    res.json({message:"deleted"});   
+    res.status(200).json();   
     }
     else{
-        res.status(404).json("invalid id")
+        res.status(404).json()
     }
 })
 
