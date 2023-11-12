@@ -1,6 +1,14 @@
 
 // index js file with jwt implementation
 
+// if u want to store data in files instead of memory, use following syntax
+//     ADMINS = JSON.parse(fs.readFileSync('admins.json', 'utf8')); load file contents into variable
+//    fs.writeFileSync('admins.json', JSON.stringify(ADMINS)); write back data into files.
+// we can have an optimal way of writing only new info into the file whenever required but it's too complicated operation.
+
+
+
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const app = express();
