@@ -29,7 +29,7 @@ router.post('/signup', (req, res) => {
         newAdmin.save();
 
         const token = jwt.sign({ username, role: 'admin' }, SECRET, { expiresIn: '1h' });
-        res.json({ message: 'Admin created successfully', token });
+        res.status(201).json({ message: 'Account created successfully', token });
       }
   
     }
@@ -50,7 +50,7 @@ router.post('/signup', (req, res) => {
   router.post('/courses', authenticateJwt, async (req, res) => {
     const course = new Course(req.body);
     await course.save();
-    res.json({ message: 'Course created successfully', courseId: course.id });
+    res.status(201).json({ message: 'Course created successfully', courseId: course.id });
   });
   
   router.put('/courses/:courseId', authenticateJwt, async (req, res) => {
