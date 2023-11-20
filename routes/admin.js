@@ -1,0 +1,63 @@
+const express=require('express');
+const mongoose=require('mongoose');
+const jwt=require('jsonwebtoken');
+const {authenticateJwt}= require('../middleware/auth');
+const {SECRET}=require('../middleware/auth');
+
+const {User,Admin,Course}=require('../db');
+
+const router=express.Router();
+
+
+
+
+
+router.post('/admin/signup', (req, res) => {
+    const { username, password } = req.body;
+    function callback(admin) {
+      if (admin) {
+        res.status(403).json({ message: 'Admin already exists' });
+      } else {
+        const obj = { username: username, password: password };
+        const newAdmin = new Admin(obj);
+        newAdmin.save();
+        const token = jwt.sign({ username, role: 'admin' }, SECRET, { expiresIn: '1h' });
+        res.status(201).json({ message: 'Admin created successfully', token });
+      }
+  
+    }
+    Admin.findOne({ username }).then(callback);
+  });
+  
+  router.post('/admin/login', async (req, res) => {
+    const { username, password } = req.headers;
+    const admin = await Admin.findOne({ username, password });
+    if (admin) {
+      const token = jwt.sign({ username, role: 'admin' }, SECRET, { expiresIn: '1h' });
+      res.json({ message: 'Logged in successfully', token });
+    } else {
+      res.status(403).json({ message: 'Invalid username or password' });
+    }
+  });
+  
+  router.post('/admin/courses', authenticateJwt, async (req, res) => {
+    const course = new Course(req.body);
+    await course.save();
+    res.status(201).json({ message: 'Course created successfully', courseId: course.id });
+  });
+  
+  router.put('/admin/courses/:courseId', authenticateJwt, async (req, res) => {
+    const course = await Course.findByIdAndUpdate(req.params.courseId, req.body, { new: true });
+    if (course) {
+      res.json({ message: 'Course updated successfully' });
+    } else {
+      res.status(404).json({ message: 'Course not found' });
+    }
+  });
+  
+  router.get('/admin/courses', authenticateJwt, async (req, res) => {
+    const courses = await Course.find({});
+    res.status(200).json({ courses });
+  });
+  
+  module.exports=router;
