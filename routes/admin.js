@@ -1,18 +1,24 @@
-const express=require('express');
-const mongoose=require('mongoose');
-const jwt=require('jsonwebtoken');
-const {authenticateJwt}= require('../middleware/auth');
-const {SECRET}=require('../middleware/auth');
+const mongoose = require("mongoose");
+const express = require('express');
+const { User, Course, Admin } = require("../db");
+const jwt = require('jsonwebtoken');
+const { SECRET } = require("../middleware/auth")
+const { authenticateJwt } = require("../middleware/auth");
 
-const {User,Admin,Course}=require('../db');
+const router = express.Router();
 
-const router=express.Router();
+router.get("/me", authenticateJwt, async (req, res) => {
+    const admin = await Admin.findOne({ username: req.user.username });
+    if (!admin) {
+      res.status(403).json({msg: "Admin doesnt exist"})
+      return
+    }
+    res.json({
+        username: admin.username
+    })
+});
 
-
-
-
-
-router.post('/admin/signup', (req, res) => {
+router.post('/signup', (req, res) => {
     const { username, password } = req.body;
     function callback(admin) {
       if (admin) {
@@ -21,15 +27,16 @@ router.post('/admin/signup', (req, res) => {
         const obj = { username: username, password: password };
         const newAdmin = new Admin(obj);
         newAdmin.save();
+
         const token = jwt.sign({ username, role: 'admin' }, SECRET, { expiresIn: '1h' });
-        res.status(201).json({ message: 'Admin created successfully', token });
+        res.json({ message: 'Admin created successfully', token });
       }
   
     }
     Admin.findOne({ username }).then(callback);
   });
   
-  router.post('/admin/login', async (req, res) => {
+  router.post('/login', async (req, res) => {
     const { username, password } = req.headers;
     const admin = await Admin.findOne({ username, password });
     if (admin) {
@@ -40,13 +47,13 @@ router.post('/admin/signup', (req, res) => {
     }
   });
   
-  router.post('/admin/courses', authenticateJwt, async (req, res) => {
+  router.post('/courses', authenticateJwt, async (req, res) => {
     const course = new Course(req.body);
     await course.save();
-    res.status(201).json({ message: 'Course created successfully', courseId: course.id });
+    res.json({ message: 'Course created successfully', courseId: course.id });
   });
   
-  router.put('/admin/courses/:courseId', authenticateJwt, async (req, res) => {
+  router.put('/courses/:courseId', authenticateJwt, async (req, res) => {
     const course = await Course.findByIdAndUpdate(req.params.courseId, req.body, { new: true });
     if (course) {
       res.json({ message: 'Course updated successfully' });
@@ -55,9 +62,15 @@ router.post('/admin/signup', (req, res) => {
     }
   });
   
-  router.get('/admin/courses', authenticateJwt, async (req, res) => {
+  router.get('/courses', authenticateJwt, async (req, res) => {
     const courses = await Course.find({});
-    res.status(200).json({ courses });
+    res.json({ courses });
   });
   
-  module.exports=router;
+  router.get('/course/:courseId', authenticateJwt, async (req, res) => {
+    const courseId = req.params.courseId;
+    const course = await Course.findById(courseId);
+    res.json({ course });
+  });
+
+  module.exports = router

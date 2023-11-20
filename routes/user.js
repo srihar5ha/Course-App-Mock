@@ -1,16 +1,9 @@
-const express=require('express');
-const mongoose=require('mongoose');
-const jwt=require('jsonwebtoken');
-const {authenticateJwt}= require('../middleware/auth');
-const {SECRET}=require('../middleware/auth');
+const express = require('express');
+const { authenticateJwt, SECRET } = require("../middleware/auth");
+const { User, Course, Admin } = require("../db");
+const router = express.Router();
 
-const {User,Admin,Course}=require('../db');
-
-const router=express.Router();
-
-
-
-router.post('/users/signup', async (req, res) => {
+  router.post('/signup', async (req, res) => {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
     if (user) {
@@ -23,7 +16,7 @@ router.post('/users/signup', async (req, res) => {
     }
   });
   
-  router.post('/users/login', async (req, res) => {
+  router.post('/login', async (req, res) => {
     const { username, password } = req.headers;
     const user = await User.findOne({ username, password });
     if (user) {
@@ -34,12 +27,12 @@ router.post('/users/signup', async (req, res) => {
     }
   });
   
-  router.get('/users/courses', authenticateJwt, async (req, res) => {
+  router.get('/courses', authenticateJwt, async (req, res) => {
     const courses = await Course.find({published: true});
     res.json({ courses });
   });
   
-  router.post('/users/courses/:courseId', authenticateJwt, async (req, res) => {
+  router.post('/courses/:courseId', authenticateJwt, async (req, res) => {
     const course = await Course.findById(req.params.courseId);
     console.log(course);
     if (course) {
@@ -56,7 +49,7 @@ router.post('/users/signup', async (req, res) => {
     }
   });
   
-  router.get('/users/purchasedCourses', authenticateJwt, async (req, res) => {
+  router.get('/purchasedCourses', authenticateJwt, async (req, res) => {
     const user = await User.findOne({ username: req.user.username }).populate('purchasedCourses');
     if (user) {
       res.json({ purchasedCourses: user.purchasedCourses || [] });
@@ -64,6 +57,5 @@ router.post('/users/signup', async (req, res) => {
       res.status(403).json({ message: 'User not found' });
     }
   });
-
-  module.exports=router;
   
+  module.exports = router
